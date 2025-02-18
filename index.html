@@ -7,7 +7,7 @@
     <style>
         body {
             text-align: center;
-            background-color: #f4f4f4;
+            background-color: #ffffff;
             font-family: Arial, sans-serif;
             user-select: none; /* Prevent text selection */
         }
@@ -57,37 +57,37 @@
     <img src="Screenshot 2025-02-19 005454.png" alt="Protected Image 1" id="image1">
     <img src="Screenshot 2025-02-19 005523.png" alt="Protected Image 2" id="image2">
     <div id="screenshotBlocker"></div>
+<script>
+    // Disable Right Click
+    document.addEventListener('contextmenu', event => event.preventDefault());
 
-    <script>
-        // Disable Right Click
-        document.addEventListener('contextmenu', event => event.preventDefault());
+    // Disable Screenshot using PrintScreen Key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "PrintScreen") {
+            alert("Screenshots are not allowed!");
+            document.getElementById('screenshotBlocker').style.display = 'block';
+            document.body.classList.add('flash-effect');
+            setTimeout(() => {
+                document.getElementById('screenshotBlocker').style.display = 'none';
+                document.body.classList.remove('flash-effect');
+            }, 3000);
+            event.preventDefault();
+        }
+    });
 
-        // Disable Screenshot using PrintScreen Key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "PrintScreen") {
-                alert("Screenshots are not allowed!");
-                document.getElementById('screenshotBlocker').style.display = 'block';
-                document.body.classList.add('flash-effect');
-                setTimeout(() => {
-                    document.getElementById('screenshotBlocker').style.display = 'none';
-                    document.body.classList.remove('flash-effect');
-                }, 3000);
-                event.preventDefault();
-            }
-        });
+    // Prevent Dragging Images
+    document.querySelectorAll('img').forEach(img => {
+        img.addEventListener('dragstart', event => event.preventDefault());
+    });
 
-        // Prevent Dragging Images
-        document.querySelectorAll('img').forEach(img => {
-            img.addEventListener('dragstart', event => event.preventDefault());
-        });
-
-        // Detect Screen Recording (Experimental)
-        let mediaDevices = navigator.mediaDevices;
-        if (mediaDevices && mediaDevices.getDisplayMedia) {
-            setInterval(async () => {
+    // Detect Screen Recording (Fixed Version)
+    document.addEventListener('keydown', async function(event) {
+        if (event.key.toLowerCase() === "r") { // Press "R" to check
+            let mediaDevices = navigator.mediaDevices;
+            if (mediaDevices && mediaDevices.getDisplayMedia) {
                 try {
                     let stream = await mediaDevices.getDisplayMedia({ video: true });
-                    stream.getTracks().forEach(track => track.stop());
+                    stream.getTracks().forEach(track => track.stop()); // Stop immediately
                     alert("Screen recording is detected and blocked!");
                     document.getElementById('image1').classList.add('blurred');
                     document.getElementById('image2').classList.add('blurred');
@@ -95,22 +95,26 @@
                         document.getElementById('image1').classList.remove('blurred');
                         document.getElementById('image2').classList.remove('blurred');
                     }, 5000);
-                } catch (err) {}
-            }, 3000);
+                } catch (err) {
+                    console.log("No screen recording detected");
+                }
+            }
         }
+    });
 
-        // Hide images when Snipping Tool or other apps are used
-        window.addEventListener("blur", function() {
-            document.getElementById('image1').classList.add('hidden');
-            document.getElementById('image2').classList.add('hidden');
-        });
+    // Hide images when Snipping Tool or other apps are used
+    window.addEventListener("blur", function() {
+        document.getElementById('image1').classList.add('hidden');
+        document.getElementById('image2').classList.add('hidden');
+    });
 
-        window.addEventListener("focus", function() {
-            setTimeout(() => {
-                document.getElementById('image1').classList.remove('hidden');
-                document.getElementById('image2').classList.remove('hidden');
-            }, 1000);
-        });
-    </script>
+    window.addEventListener("focus", function() {
+        setTimeout(() => {
+            document.getElementById('image1').classList.remove('hidden');
+            document.getElementById('image2').classList.remove('hidden');
+        }, 1000);
+    });
+</script>
+
 </body>
 </html>
