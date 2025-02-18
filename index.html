@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Webpage</title>
+    <style>
+        body {
+            text-align: center;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+            user-select: none; /* Prevent text selection */
+        }
+
+        img {
+            width: 300px;
+            height: auto;
+            margin: 20px;
+            pointer-events: none; /* Disable interactions */
+            transition: filter 0.5s, opacity 0.5s;
+        }
+        
+        /* Prevent screenshot by adding screen overlay */
+        #screenshotBlocker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99999;
+            display: none;
+        }
+        
+        /* Blur effect to disrupt screenshots */
+        .blurred {
+            filter: blur(10px);
+        }
+        
+        /* Flash effect to disrupt screen capture */
+        @keyframes flash {
+            0%, 100% { background: rgba(255, 255, 255, 0.8); }
+            50% { background: rgba(0, 0, 0, 0.8); }
+        }
+        .flash-effect {
+            animation: flash 0.1s infinite alternate;
+        }
+
+        /* Hide images when window loses focus */
+        .hidden {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Protected Images</h1>
+    <img src="Screenshot 2025-02-19 005454.png" alt="Protected Image 1" id="image1">
+    <img src="Screenshot 2025-02-19 005523.png" alt="Protected Image 2" id="image2">
+    <div id="screenshotBlocker"></div>
+
+    <script>
+        // Disable Right Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Disable Screenshot using PrintScreen Key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "PrintScreen") {
+                alert("Screenshots are not allowed!");
+                document.getElementById('screenshotBlocker').style.display = 'block';
+                document.body.classList.add('flash-effect');
+                setTimeout(() => {
+                    document.getElementById('screenshotBlocker').style.display = 'none';
+                    document.body.classList.remove('flash-effect');
+                }, 3000);
+                event.preventDefault();
+            }
+        });
+
+        // Prevent Dragging Images
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('dragstart', event => event.preventDefault());
+        });
+
+        // Detect Screen Recording (Experimental)
+        let mediaDevices = navigator.mediaDevices;
+        if (mediaDevices && mediaDevices.getDisplayMedia) {
+            setInterval(async () => {
+                try {
+                    let stream = await mediaDevices.getDisplayMedia({ video: true });
+                    stream.getTracks().forEach(track => track.stop());
+                    alert("Screen recording is detected and blocked!");
+                    document.getElementById('image1').classList.add('blurred');
+                    document.getElementById('image2').classList.add('blurred');
+                    setTimeout(() => {
+                        document.getElementById('image1').classList.remove('blurred');
+                        document.getElementById('image2').classList.remove('blurred');
+                    }, 5000);
+                } catch (err) {}
+            }, 3000);
+        }
+
+        // Hide images when Snipping Tool or other apps are used
+        window.addEventListener("blur", function() {
+            document.getElementById('image1').classList.add('hidden');
+            document.getElementById('image2').classList.add('hidden');
+        });
+
+        window.addEventListener("focus", function() {
+            setTimeout(() => {
+                document.getElementById('image1').classList.remove('hidden');
+                document.getElementById('image2').classList.remove('hidden');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
